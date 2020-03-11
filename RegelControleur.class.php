@@ -45,7 +45,7 @@ class RegelControleur
                             }
                         }else if($k_i-1 >= 0) {
                             if($k2 == $colums[$k_i-1]) {
-                                return $this->getVak($i, $r_i, $k_i, -1, -1, $vakjes, $kanSlaan, $kleur);
+                                return $this->getVak($r_i, $k_i, -1, -1, $vakjes, $kanSlaan, $kleur);
                             }
                         }
                     }else {
@@ -219,7 +219,7 @@ class RegelControleur
         return false;
     }
 
-    private function getSteenDiagonaal($offset, $bord, $testSteen, $i, $testVak)
+    private function getSteenDiagonaal($offset, $bord, $i, $testVak)
     {
         $count = count($bord->getVakjes());
         if($offset < 0) {

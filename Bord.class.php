@@ -39,7 +39,7 @@ class Bord
                         $steen = new Steen($pos, "blue");
                         $vak->setSteen($steen);
                     }else {
-                        $vak->removeSteen(null);
+                        $vak->removeSteen();
                     }
                     $this->vakjes[] = $vak;
                 }
@@ -93,7 +93,7 @@ class Bord
         $index = (($this->toNumber($r2)-1) * 10)+$k2-1;
         if($kanSlaan) {
             $vak = $this->vakjes[$index];
-            $vak->removeSteen(null);
+            $vak->removeSteen();
             $index += $index - ((($this->toNumber($r1)-1) * 10)+$k1-1);
         }
         $vak = $this->vakjes[$index];
