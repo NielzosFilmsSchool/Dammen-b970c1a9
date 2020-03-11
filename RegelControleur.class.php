@@ -2,7 +2,10 @@
 
 class RegelControleur
 {
-    public function isGeldigeZet($zet, $bord, $spelerAanDeBeurt)
+
+    private $playable_color = "light_gray";
+
+    public function isGeldigeZet($zet, $bord, $spelerAanDeBeurt, $kanSlaan)
     {
         if($zet == null) {
             return false;
@@ -22,6 +25,7 @@ class RegelControleur
             return false;
         }else {
             if($spelerAanDeBeurt == "Blauw") {
+                $kleur = "blue";
                 $r_i = array_search($r1, $row);
                 $k_i = array_search($k1, $colums);
 
@@ -29,32 +33,19 @@ class RegelControleur
                     $r = $row[$r_i-1];
                     if($r2 == $r) {
                         if($k_i-1 >= 0 && $k_i+1 < count($colums)) {
-                            echo "meer dan en minder dan".PHP_EOL;
                             if($k2 == $colums[$k_i-1]) {
-                                $index = ($r_i-1)*10 + $k_i-1;
-                                echo $index.PHP_EOL;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("blue");
+                                return $this->getVak($r_i, $k_i, -1, -1, $vakjes, $kanSlaan, $kleur);
                             }
                             if($k2 == $colums[$k_i+1]) {
-                                $index = ($r_i-1)*10 + $k_i+1;
-                                echo $index.PHP_EOL;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("blue");
+                                return $this->getVak($r_i, $k_i, -1, 1, $vakjes, $kanSlaan, $kleur);
                             }
                         }else if($k_i+1 < count($colums)) {
-                            echo "minder dan".PHP_EOL;
                             if($k2 == $colums[$k_i+1]) {
-                                $index = ($r_i-1)*10 + $k_i+1;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("blue");
+                                return $this->getVak($r_i, $k_i, -1, 1, $vakjes, $kanSlaan, $kleur);
                             }
                         }else if($k_i-1 >= 0) {
-                            echo "meer dan".PHP_EOL;
                             if($k2 == $colums[$k_i-1]) {
-                                $index = ($r_i-1)*10 + $k_i-1;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("blue");
+                                return $this->getVak($i, $r_i, $k_i, -1, -1, $vakjes, $kanSlaan, $kleur);
                             }
                         }
                     }else {
@@ -64,6 +55,7 @@ class RegelControleur
                     return false;
                 }
             }else {
+                $kleur = "black";
                 $r_i = array_search($r1, $row);
                 $k_i = array_search($k1, $colums);
 
@@ -71,32 +63,19 @@ class RegelControleur
                     $r = $row[$r_i+1];
                     if($r2 == $r) {
                         if($k_i-1 >= 0 && $k_i+1 < count($colums)) {
-                            echo "meer dan en minder dan".PHP_EOL;
                             if($k2 == $colums[$k_i+1]) {
-                                $index = ($r_i+1)*10 + $k_i+1;
-                                echo $index.PHP_EOL;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("black");
+                                return $this->getVak($r_i, $k_i, 1, 1, $vakjes, $kanSlaan, $kleur);
                             }
                             if($k2 == $colums[$k_i-1]) {
-                                $index = ($r_i+1)*10 + $k_i-1;
-                                echo $index.PHP_EOL;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("black");
+                                return $this->getVak($r_i, $k_i, 1, -1, $vakjes, $kanSlaan, $kleur);
                             }
                         }else if($k_i+1 < count($colums)) {
-                            echo "minder dan".PHP_EOL;
                             if($k2 == $colums[$k_i+1]) {
-                                $index = ($r_i+1)*10 + $k_i+1;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("black");
+                                return $this->getVak($r_i, $k_i, 1, +1, $vakjes, $kanSlaan, $kleur);
                             }
                         }else if($k_i-1 >= 0) {
-                            echo "meer dan".PHP_EOL;
                             if($k2 == $colums[$k_i-1]) {
-                                $index = ($r_i+1)*10 + $k_i-1;
-                                $vak = $vakjes[$index];
-                                return !$vak->containsSteenKleur("black");
+                                return $this->getVak($r_i, $k_i, 1, -1, $vakjes, $kanSlaan, $kleur);
                             }
                         }
                     }else {
@@ -106,6 +85,17 @@ class RegelControleur
                     return false;
                 }
             }
+        }
+    }
+
+    private function getVak($r_i, $k_i, $r_offset, $k_offset, $vakjes, $kanSlaan, $kleur)
+    {
+        $index = ($r_i+$r_offset)*10 + $k_i+$k_offset;
+        $vak = $vakjes[$index];
+        if($kanSlaan) {
+            return !$vak->containsSteenKleur($kleur);
+        }else {
+            return !$vak->containsSteen();
         }
     }
 
@@ -129,55 +119,31 @@ class RegelControleur
                             $vak_R = $bord->getVakjes()[$i-9];
 
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "black" && $zet_id != $vak_L_id) {
-                                    if($i-22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i-22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_L, $zet_id, "black", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "black" && $zet_id != $vak_R_id) {
-                                    if($i-18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i-18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_R, $zet_id, "black", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i-11 >= 0) {
                             $vak_L = $bord->getVakjes()[$i-11];
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "black" && $zet_id != $vak_L_id) {
-                                    if($i-22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i-22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_L, $zet_id, "black", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i-9 >= 0) {
                             $vak_R = $bord->getVakjes()[$i-9];
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "black" && $zet_id != $vak_R_id) {
-                                    if($i-18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i-18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_R, $zet_id, "black", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         }
@@ -189,55 +155,31 @@ class RegelControleur
                             $vak_R = $bord->getVakjes()[$i+9];
 
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "blue" && $zet_id != $vak_L_id) {
-                                    if($i+22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i+22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_L, $zet_id, "blue", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "blue" && $zet_id != $vak_R_id) {
-                                    if($i+18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i+18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_R, $zet_id, "blue", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i+11 < $vak_count) {
                             $vak_L = $bord->getVakjes()[$i+11];
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "blue" && $zet_id != $vak_L_id) {
-                                    if($i+22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i+22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_L, $zet_id, "blue", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i+9 < $vak_count) {
                             $vak_R = $bord->getVakjes()[$i+9];
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "blue" && $zet_id != $vak_R_id) {
-                                    if($i+18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i+18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTest($vak_R, $zet_id, "blue", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         }
@@ -248,6 +190,59 @@ class RegelControleur
         return false;
     }
 
+    private function vakDiagonaalTest($testVak, $zet_id, $kleur, $i, $bord, $offset)
+    {
+        $testSteen = $testVak->getSteen();
+        $vak_L_id = (($this->toNumber($testSteen->getPositie()->getY())-1) * 10)+$testSteen->getPositie()->getX()-1;
+        if($testSteen->getColor() == $kleur && $zet_id != $vak_L_id) {
+            if($kleur == "blue") {
+                return $this->getSteenDiagonaal(-$offset, $bord, $testSteen, $i, $testVak);
+            }
+            if($kleur == "black") {
+                return $this->getSteenDiagonaal($offset, $bord, $testSteen, $i, $testVak);
+            }
+        }
+        return false;
+    }
+
+    private function vakDiagonaalTestZonderZet($testVak, $kleur, $i, $bord, $offset)
+    {
+        $testSteen = $testVak->getSteen();
+        if($testSteen->getColor() == $kleur) {
+            if($kleur == "blue") {
+                return $this->getSteenDiagonaal(-$offset, $bord, $testSteen, $i, $testVak);
+            }
+            if($kleur == "black") {
+                return $this->getSteenDiagonaal($offset, $bord, $testSteen, $i, $testVak);
+            }
+        }
+        return false;
+    }
+
+    private function getSteenDiagonaal($offset, $bord, $testSteen, $i, $testVak)
+    {
+        $count = count($bord->getVakjes());
+        if($offset < 0) {
+            if($i+$offset >= 0) {
+                return $this->getSteenOffset($i, $offset, $bord, $testVak);
+            }
+        }else {
+            if($i+$offset < $count) {
+                return $this->getSteenOffset($i, $offset, $bord, $testVak);
+            }   
+        }
+        return false;
+    }
+
+    private function getSteenOffset($i, $offset, $bord, $testVak)
+    {
+        $steen = $bord->getVakjes()[$i+$offset];
+        if(!$steen->containsSteen() && $testVak->getColor() == $this->playable_color) {
+            return true;
+        }
+        return false;
+    }
+ 
     public function chekKanSlaanZonderZet($bord, $spelerAanDeBeurt)
     {
         $vak_count = count($bord->getVakjes());
@@ -262,55 +257,31 @@ class RegelControleur
                             $vak_R = $bord->getVakjes()[$i-9];
 
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "black") {
-                                    if($i-22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i-22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_L, "black", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "black") {
-                                    if($i-18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i-18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_R, "black", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i-11 >= 0) {
                             $vak_L = $bord->getVakjes()[$i-11];
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "black") {
-                                    if($i-22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i-22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_L, "black", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i-9 >= 0) {
                             $vak_R = $bord->getVakjes()[$i-9];
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "black") {
-                                    if($i-18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i-18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_R, "black", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         }
@@ -322,55 +293,31 @@ class RegelControleur
                             $vak_R = $bord->getVakjes()[$i+9];
 
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "blue") {
-                                    if($i+22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i+22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_L, "blue", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "blue") {
-                                    if($i+18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i+18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_R, "blue", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i+11 < $vak_count) {
                             $vak_L = $bord->getVakjes()[$i+11];
                             if($vak_L->containsSteen()) {
-                                $steen_L = $vak_L->getSteen();
-                                $vak_L_id = (($this->toNumber($steen_L->getPositie()->getY())-1) * 10)+$steen_L->getPositie()->getX()-1;
-                                if($steen_L->getColor() == "blue") {
-                                    if($i+22 < $vak_count) {
-                                        $vak_L2 = $bord->getVakjes()[$i+22];
-                                        if(!$vak_L2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_L, "blue", $i, $bord, 22);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         } else if($i+9 < $vak_count) {
                             $vak_R = $bord->getVakjes()[$i+9];
                             if($vak_R->containsSteen()) {
-                                $steen_R = $vak_R->getSteen();
-                                $vak_R_id = (($this->toNumber($steen_R->getPositie()->getY())-1) * 10)+$steen_R->getPositie()->getX()-1;
-                                if($steen_R->getColor() == "blue") {
-                                    if($i+18 < $vak_count) {
-                                        $vak_R2 = $bord->getVakjes()[$i+18];
-                                        if(!$vak_R2->containsSteen()) {
-                                            return true;
-                                        }
-                                    }
+                                $returnValue = $this->vakDiagonaalTestZonderZet($vak_R, "blue", $i, $bord, 18);
+                                if ($returnValue) {
+                                    return true;
                                 }
                             }
                         }

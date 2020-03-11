@@ -24,16 +24,21 @@ class DamSpel
             while($ask_again){
                 $zet = $this->userInterface->vraagSpelerOmZet($this->spelerAanDeBeurt);
                 if(!$this->regelControleur->chekKanSlaan($zet, $this->bord, $this->spelerAanDeBeurt)) {
-                    if($this->regelControleur->isGeldigeZet($zet, $this->bord, $this->spelerAanDeBeurt)) {
+                    $kanSlaan = $this->regelControleur->chekKanSlaanZonderZet($this->bord, $this->spelerAanDeBeurt);
+                    if($this->regelControleur->isGeldigeZet($zet, $this->bord, $this->spelerAanDeBeurt, $kanSlaan)) {
                         $ask_again = false;
-                        $kanSlaan = $this->regelControleur->chekKanSlaanZonderZet($this->bord, $this->spelerAanDeBeurt);
-                        echo "kanSlaan: $kanSlaan".PHP_EOL;
-                        $this->bord->voerZetUit($zet, $this->spelerAanDeBeurt, $kanSlaan);
+                        $success = $this->bord->voerZetUit($zet, $kanSlaan);
 
-                        if($this->spelerAanDeBeurt == "Blauw") {
-                            $this->spelerAanDeBeurt = "Zwart";
-                        }else if($this->spelerAanDeBeurt == "Zwart") {
-                            $this->spelerAanDeBeurt = "Blauw";
+                        if($success) {
+                            if($this->spelerAanDeBeurt == "Blauw") {
+                                $this->spelerAanDeBeurt = "Zwart";
+                            }else if($this->spelerAanDeBeurt == "Zwart") {
+                                $this->spelerAanDeBeurt = "Blauw";
+                            }
+                        }else {
+                            $ask_again = true;
+                            $this->bord->printStatus();
+                            echo "Dat is geen geldige zet!".PHP_EOL;
                         }
                     }else {
                         $this->bord->printStatus();

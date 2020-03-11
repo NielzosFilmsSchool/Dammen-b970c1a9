@@ -13,7 +13,11 @@ class Vak
 
     public function setSteen($steen)
     {
-        $this->steen = $steen;
+        if(!$this->containsSteen()) {
+            $this->steen = $steen;
+            return true;
+        }
+        return false;
     }
 
     public function removeSteen()
@@ -35,7 +39,7 @@ class Vak
     }
     public function containsSteenKleur($steen_kleur)
     {
-        if($this->steen != null) {
+        if($this->containsSteen()) {
             if($this->steen->getColor() == $steen_kleur) {
                 return true;
             }

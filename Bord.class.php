@@ -10,7 +10,6 @@ class Bord
 {
     private $rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
     private $colums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
     private $vakjes = [];
     private $colors;
 
@@ -25,8 +24,8 @@ class Bord
         $bg_color = "light_gray";
         $fg_color = "black";
         $switch_colors = false;
-        for($y = 0;$y<10;$y++){
-            for($x = 0;$x<10;$x++){
+        for($y = 0;$y<count($this->colums);$y++){
+            for($x = 0;$x<count($this->rows);$x++){
                 if($switch_colors) {
                     $this->vakjes[] = new Vak($fg_color); 
                 }else {
@@ -40,28 +39,19 @@ class Bord
                         $steen = new Steen($pos, "blue");
                         $vak->setSteen($steen);
                     }else {
-                        $vak->setSteen(null);
+                        $vak->removeSteen(null);
                     }
                     $this->vakjes[] = $vak;
                 }
 
-                if($switch_colors) {
-                    $switch_colors = false;
-                } else if(!$switch_colors) {
-                    $switch_colors = true;
-                }
+                $switch_colors = !$switch_colors;
             }
-            if($switch_colors) {
-                $switch_colors = false;
-            } else if(!$switch_colors) {
-                $switch_colors = true;
-            }
+            $switch_colors = !$switch_colors;
         }
     }
 
-    public function voerZetUit($zet, $spelerAanDeBeurt, $kanSlaan)
+    public function voerZetUit($zet, $kanSlaan)
     {
-        //f 8 naar e 7 werkt niet
         $r1 = $zet->getVanRij();
         $k1 = $zet->getVanKolom();
         $r2 = $zet->getNaarRij();
@@ -70,12 +60,10 @@ class Bord
         $steen = null;
 
         foreach($this->vakjes as $vakje) {
-            $tmp_steen = $vakje->getSteen();
             if($vakje->containsSteen()) {
+                $tmp_steen = $vakje->getSteen();
                 $pos = $tmp_steen->getPositie();
                 if($r1 == $pos->getY() && $k1 == $pos->getX()) {
-                    echo "test".PHP_EOL;
-                    $steen = $vakje->getSteen();
                     $new_pos = new Positie($k2, $r2);
                     if($kanSlaan) {
                         $r2_i = array_search($r2, $this->rows);
@@ -89,13 +77,15 @@ class Bord
                         $r_i = $r2_i + $r_diff;
                         $k_i = $k2_i + $k_diff;
 
-                        echo $this->colums[$k_i];
-                        echo $this->rows[$r_i].PHP_EOL;
+                        if($k_i < 0 || $k_i > count($this->colums) || $r_i < 0 || $r_i > count($this->rows)) {
+                            return false;
+                        }
 
                         $new_pos->setPositie($this->colums[$k_i], $this->rows[$r_i]);
                     }
-                    $steen->setPositie($new_pos);
-                    $vakje->setSteen(null);
+                    $tmp_steen->setPositie($new_pos);
+                    $steen = $tmp_steen;
+                    $vakje->removeSteen();
                 }
             }
         }
@@ -103,13 +93,12 @@ class Bord
         $index = (($this->toNumber($r2)-1) * 10)+$k2-1;
         if($kanSlaan) {
             $vak = $this->vakjes[$index];
-            $vak->setSteen(null);
+            $vak->removeSteen(null);
             $index += $index - ((($this->toNumber($r1)-1) * 10)+$k1-1);
         }
         $vak = $this->vakjes[$index];
         $vak->setSteen($steen);
-        echo $vak->getSteen()->getPositie()->getX().PHP_EOL;
-        echo $vak->getSteen()->getPositie()->getY().PHP_EOL;
+        return true;
     }
 
     private function toNumber($dest)
@@ -129,7 +118,7 @@ class Bord
         echo  " ".$this->rows[0]." ";
         for($i = 0;$i<count($this->vakjes);$i++){
             $vak = $this->vakjes[$i];
-            if($vak->getSteen() != null) {
+            if($vak->containsSteen()) {
                 $steen = $vak->getSteen();
                 echo $this->colors->getColoredString(" ○ ", $steen->getColor(), $vak->getColor());
             }else {
