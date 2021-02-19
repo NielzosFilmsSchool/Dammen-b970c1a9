@@ -18,49 +18,48 @@ class DamSpel
     public function start()
     {
         $spelen = true;
-        while($spelen){
+        while ($spelen) {
             $this->bord->printStatus();
             $ask_again = true;
-            while($ask_again){
+            while ($ask_again) {
                 $zet = $this->userInterface->vraagSpelerOmZet($this->spelerAanDeBeurt);
-                if(!$this->regelControleur->chekKanSlaan($zet, $this->bord, $this->spelerAanDeBeurt)) {
+                if (!$this->regelControleur->chekKanSlaan($zet, $this->bord, $this->spelerAanDeBeurt)) {
                     $kanSlaan = $this->regelControleur->chekKanSlaanZonderZet($this->bord, $this->spelerAanDeBeurt);
-                    if($this->regelControleur->isGeldigeZet($zet, $this->bord, $this->spelerAanDeBeurt, $kanSlaan)) {
+                    if ($this->regelControleur->isGeldigeZet($zet, $this->bord, $this->spelerAanDeBeurt, $kanSlaan)) {
                         $ask_again = false;
                         $success = $this->bord->voerZetUit($zet, $kanSlaan);
 
-                        if($success) {
-                            if($this->spelerAanDeBeurt == "Blauw") {
+                        if ($success) {
+                            if ($this->spelerAanDeBeurt == "Blauw") {
                                 $this->spelerAanDeBeurt = "Zwart";
-                            }else if($this->spelerAanDeBeurt == "Zwart") {
+                            } else if ($this->spelerAanDeBeurt == "Zwart") {
                                 $this->spelerAanDeBeurt = "Blauw";
                             }
-                        }else {
+                        } else {
                             $ask_again = true;
                             $this->bord->printStatus();
-                            echo "Dat is geen geldige zet!".PHP_EOL;
+                            echo "Dat is geen geldige zet!" . PHP_EOL;
                         }
-                    }else {
+                    } else {
                         $this->bord->printStatus();
-                        echo "Dat is geen geldige zet!".PHP_EOL;
+                        echo "Dat is geen geldige zet!" . PHP_EOL;
                     }
                 } else {
                     $this->bord->printStatus();
-                    echo "Je bent verplicht te slaan!".PHP_EOL;
+                    echo "Je bent verplicht te slaan!" . PHP_EOL;
                 }
             }
 
             $win = $this->regelControleur->chekWinConditie($this->bord);
-            if($win == "black") {
+            if ($win == "black") {
                 $this->bord->printStatus();
                 echo "Zwart heeft het spel gewonnen!";
                 $spelen = false;
-            } else if($win == "blue") {
+            } else if ($win == "blue") {
                 $this->bord->printStatus();
                 echo "Blauw heeft het spel gewonnen!";
                 $spelen = false;
             }
-
         }
     }
 }

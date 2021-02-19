@@ -24,21 +24,17 @@ class Bord
         $bg_color = "light_gray";
         $fg_color = "black";
         $switch_colors = false;
-        for($y = 0;$y<count($this->colums);$y++){
-            for($x = 0;$x<count($this->rows);$x++){
-                if($switch_colors) {
+        for ($y = 0; $y < count($this->colums); $y++) {
+            for ($x = 0; $x < count($this->rows); $x++) {
+                if ($switch_colors) {
                     $this->vakjes[] = new Vak($fg_color); 
-                }else {
+                } else {
                     $vak = new Vak($bg_color);
-                    if($y < 4) {
-                        $pos = new Positie($this->colums[$x], $this->rows[$y]);
-                        $steen = new Steen($pos, "black");
-                        $vak->setSteen($steen);
-                    } else if($y > 5) {
-                        $pos = new Positie($this->colums[$x], $this->rows[$y]);
-                        $steen = new Steen($pos, "blue");
-                        $vak->setSteen($steen);
-                    }else {
+                    if ($y < 4) {
+                        $vak = $this->createVakWithStone($x, $y, $vak, "black");
+                    } else if ($y > 5) {
+                        $vak = $this->createVakWithStone($x, $y, $vak, "blue");
+                    } else {
                         $vak->removeSteen();
                     }
                     $this->vakjes[] = $vak;
@@ -50,6 +46,14 @@ class Bord
         }
     }
 
+    private function createVakWithStone($x, $y, $vak, $color)
+    {
+        $pos = new Positie($this->colums[$x], $this->rows[$y]);
+        $steen = new Steen($pos, $color);
+        $vak->setSteen($steen);
+        return $vak;
+    }
+
     public function voerZetUit($zet, $kanSlaan)
     {
         $r1 = $zet->getVanRij();
@@ -59,13 +63,13 @@ class Bord
 
         $steen = null;
 
-        foreach($this->vakjes as $vakje) {
-            if($vakje->containsSteen()) {
+        foreach ($this->vakjes as $vakje) {
+            if ($vakje->containsSteen()) {
                 $tmp_steen = $vakje->getSteen();
                 $pos = $tmp_steen->getPositie();
-                if($r1 == $pos->getY() && $k1 == $pos->getX()) {
+                if ($r1 == $pos->getY() && $k1 == $pos->getX()) {
                     $new_pos = new Positie($k2, $r2);
-                    if($kanSlaan) {
+                    if ($kanSlaan) {
                         $r2_i = array_search($r2, $this->rows);
                         $k2_i = array_search($k2, $this->colums);
                         $r1_i = array_search($r1, $this->rows);
@@ -77,7 +81,7 @@ class Bord
                         $r_i = $r2_i + $r_diff;
                         $k_i = $k2_i + $k_diff;
 
-                        if($k_i < 0 || $k_i > count($this->colums) || $r_i < 0 || $r_i > count($this->rows)) {
+                        if ($k_i < 0 || $k_i > count($this->colums) || $r_i < 0 || $r_i > count($this->rows)) {
                             return false;
                         }
 
@@ -90,11 +94,11 @@ class Bord
             }
         }
 
-        $index = (($this->toNumber($r2)-1) * 10)+$k2-1;
-        if($kanSlaan) {
+        $index = (($this->toNumber($r2) - 1) * 10) + $k2 - 1;
+        if ($kanSlaan) {
             $vak = $this->vakjes[$index];
             $vak->removeSteen();
-            $index += $index - ((($this->toNumber($r1)-1) * 10)+$k1-1);
+            $index += $index - ((($this->toNumber($r1) - 1) * 10) + $k1 - 1);
         }
         $vak = $this->vakjes[$index];
         $vak->setSteen($steen);
@@ -115,22 +119,22 @@ class Bord
         system('cls');
         echo PHP_EOL;
         $row_count = 0;
-        echo  " ".$this->rows[0]." ";
-        for($i = 0;$i<count($this->vakjes);$i++){
+        echo  " " . $this->rows[0] . " ";
+        for ($i = 0; $i < count($this->vakjes); $i++) {
             $vak = $this->vakjes[$i];
-            if($vak->containsSteen()) {
+            if ($vak->containsSteen()) {
                 $steen = $vak->getSteen();
                 echo $this->colors->getColoredString(" ○ ", $steen->getColor(), $vak->getColor());
-            }else {
+            } else {
                 echo $this->colors->getColoredString("   ", "black", $vak->getColor());
             }
 
             $row_count++;
-            if($row_count >= 10) {
+            if ($row_count >= 10) {
                 echo PHP_EOL;
-                if($i/10+1 < count($this->rows)) {
-                    echo  " ".$this->rows[$i/10+1]." ";
-                }else {
+                if ($i / 10 + 1 < count($this->rows)) {
+                    echo  " " . $this->rows[$i / 10 + 1] . " ";
+                } else {
                     echo "    1  2  3  4  5  6  7  8  9  10";
                 }
                 $row_count = 0;
